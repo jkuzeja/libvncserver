@@ -1,0 +1,9 @@
+*.swp
+/nacro*.java
+/nacro*.class
+/nacro_wrap.c
+/libnacro.so
+/nacro.jar
+/COPYING
+/INSTALL
+/test.class
