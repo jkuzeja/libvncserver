@@ -1,19 +1,20 @@
-INTERFACE=nacro.h
-SRCS=nacro.c
-OBJS=nacro.o
-ISRCS=nacro_wrap.c
-IOBJS=nacro_wrap.o
-TARGET=nacro
+INTERFACE=rfb/rfb_java.h
+SRCS=rfb/rfb_java.c
+OBJS=rfb/rfb_java.o
+ISRCS=rfb/rfb_java_wrap.c
+IOBJS=rfb/rfb_java_wrap.o
+TARGET=rfb_java
 LIBPREFIX=lib
-JAVAS=nacroConstants.java nacro.java nacroJNI.java
+JAVAS=rfb/rfb.java rfb/rfbJNI.java \
+	rfb/RFBClientMessage.java rfb/ServerTest.java
 CLASSES=$(patsubst %.java,%.class,$(JAVAS))
 LIBS= @LIBVNCSERVERLIBS@
 
-nacro_CFLAGS= @LIBVNCSERVERCFLAGS@
+rfb_java_CFLAGS= @LIBVNCSERVERCFLAGS@
 
-SWIGOPT=
+SWIGOPT=-package rfb -outdir rfb
 
-EXTRA_DIST=autogen.sh $(INTERFACE) $(SRCS) $(ISRCS) nacro.pm recorder.pl
+EXTRA_DIST=autogen.sh $(INTERFACE) $(SRCS) $(ISRCS)
 
 all: $(LIBPREFIX)$(TARGET)$(SO) $(TARGET).jar test.class
 
@@ -43,11 +44,11 @@ $(LIBPREFIX)$(TARGET)$(SO): $(OBJS) $(IOBJS)
 $(TARGET).jar: $(CLASSES)
 	jar cvf $@ $^
 
-%.class: %.java
+rfb/%.class: rfb/%.java
 	$(JAVAC) $^
 
 PWD=$(shell pwd)
 LD_LIBRARY_PATH=LD_LIBRARY_PATH="$(PWD)/../libvncserver/.libs:$(PWD)/../libvncclient/.libs"
 
 test: all
-	$(LD_LIBRARY_PATH) java -Djava.library.path=. test
+	$(LD_LIBRARY_PATH) java -Djava.library.path=. rfb/ServerTest
