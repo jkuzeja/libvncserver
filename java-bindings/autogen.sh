@@ -16,7 +16,7 @@ ACLOCAL=aclocal-1.4
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
 	echo
-	echo "You must have autoconf installed to compile VisualNaCro."
+	echo "You must have autoconf installed to compile java-bindings."
 	echo "Download the appropriate package for your distribution,"
 	echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
 	DIE=1
@@ -24,7 +24,7 @@ ACLOCAL=aclocal-1.4
 
 ($AUTOMAKE --version) < /dev/null > /dev/null 2>&1 || {
 	echo
-	echo "You must have automake installed to compile VisualNaCro."
+	echo "You must have automake installed to compile java-bindings."
 	echo "Get ftp://sourceware.cygnus.com/pub/automake/automake-1.4.tar.gz"
 	echo "(or a newer version if it is available)"
 	DIE=1
@@ -34,8 +34,8 @@ if test "$DIE" -eq 1; then
 	exit 1
 fi
 
-(test -f $srcdir/nacro.h) || {
-	echo "You must run this script in the top-level VisualNaCro directory"
+(test -f $srcdir/rfb/rfb_java.h) || {
+	echo "You must run this script in the top-level java-bindings directory"
 	exit 1
 }
 
@@ -52,4 +52,4 @@ autoconf
 echo "Running ./configure --enable-maintainer-mode" "$@"
 $srcdir/configure --enable-maintainer-mode "$@"
 
-echo "Now type 'make' to compile VisualNaCro."
+echo "Now type 'make' to compile java-bindings."

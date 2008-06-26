@@ -168,3 +168,69 @@ fprintf(stderr, "resource: %d, %p", resource, server->client);
 		return;
 	HandleRFBServerMessage(server->client);
 }
+
+client_t addClient(resource_t server_handle)
+{
+	struct server *server = get_resource(&server_pool, server_handle);
+	rfbClientPtr client = rfbNewClient(server->server, -1);
+
+	client->readBufferAlloc = 256;
+	client->readBuffer = malloc(client->readBufferAlloc);
+	if (!client->readBuffer) {
+		rfbClientConnectionGone(client);
+		return -1;
+	}
+	client->writeBufferAlloc = 16384;
+	client->writeBuffer = malloc(client->writeBufferAlloc);
+	if (!client->writeBuffer) {
+		free(client->readBuffer);
+		rfbClientConnectionGone(client);
+		return -1;
+	}
+
+	return add_resource(&client_pool, client);
+}
+
+int processClientMessage(client_t client_handle, signed char buffer[], int len)
+{
+	rfbClientPtr client = get_resource(&client_pool, client_handle);
+	if (client->readBufferLen + len < client->readBufferAlloc) {
+		int alloc = client->readBufferLen + len;
+		char *buf = realloc(client->readBuffer, alloc);
+
+		if (!buf)
+			return -1;
+		client->readBuffer = buf;
+		client->readBufferAlloc = alloc;
+	}
+	memcpy(client->readBuffer + client->readBufferLen, buffer, len);
+	client->readBufferLen += len;
+
+	rfbProcessClientMessage(client);
+	return 0;
+}
+
+int getServerResponse(client_t client_handle, signed char buffer[], int len)
+{
+	rfbClientPtr client = get_resource(&client_pool, client_handle);
+
+	if (client->writeBufferLen < len)
+		len = client->writeBufferLen;
+
+	memcpy(buffer, client->writeBuffer, len);
+	client->writeBufferLen -= len;
+
+	if (client->writeBufferLen)
+		memmove(client->writeBuffer, client->writeBuffer + len,
+			client->writeBufferLen);
+
+	return len;
+}
+
+void closeClient(client_t client_handle)
+{
+	rfbClientPtr client = get_resource(&client_pool, client_handle);
+
+	rfbClientConnectionGone(client);
+	unset_resource(&client_pool, client_handle);
+}

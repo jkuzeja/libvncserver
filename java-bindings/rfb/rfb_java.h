@@ -26,7 +26,7 @@ resource_t connectToServer(const char* server, int serverPort);
 void processServerEvents(resource_t server);
 
 client_t addClient(resource_t server);
-void processClientMessage(client_t client, signed char buffer[], int len);
+int processClientMessage(client_t client, signed char buffer[], int len);
 int getServerResponse(client_t client, signed char buffer[], int len);
 void closeClient(client_t client);
 

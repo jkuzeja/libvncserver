@@ -420,7 +420,7 @@ typedef struct _rfbClientRec {
     SOCKET sock;
     char *host;
 
-    /* RFB protocol minor version number */
+   /* RFB protocol minor version number */
     int protocolMajorVersion;
     int protocolMinorVersion;
 
@@ -589,6 +589,12 @@ typedef struct _rfbClientRec {
     int progressiveSliceY;
 
     rfbExtensionData* extensions;
+
+    /* buffer-based I/O */
+    int readBufferLen, readBufferAlloc;
+    char *readBuffer;
+    int writeBufferLen, writeBufferAlloc;
+    char *writeBuffer;
 } rfbClientRec, *rfbClientPtr;
 
 /*

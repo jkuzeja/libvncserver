@@ -20,6 +20,9 @@ public class ServerTest {
 		remotePort = port;
 
 		serverHandle = rfb.connectToServer(host, port);
+		if (serverHandle < 0)
+			throw new RuntimeException("Could not connect to "
+				+ host + ":" + port);
 
 		try {
 			listen = new ServerSocket(listenPort);
@@ -31,7 +34,7 @@ public class ServerTest {
 
 	public void run() {
 		try {
-			new ServerThread().run();
+			new ServerThread().start();
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -40,25 +43,27 @@ public class ServerTest {
 		for (;;) {
 			try {
 				Socket socket = listen.accept();
-				new ClientThread(socket).run();
+				new ClientThread(socket).start();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	class ServerThread implements Runnable {
+	class ServerThread extends Thread {
 		public void run() {
 			for (;;)
 				rfb.processServerEvents(serverHandle);
 		}
 	}
 
-	class ClientThread implements Runnable {
+	class ClientThread extends Thread {
 		InputStream input;
 		OutputStream output;
 		RFBClientMessage messageParser;
 		Socket serverSocket;
+
+		int client;
 
 		ClientThread(Socket socket) throws IOException {
 			input = socket.getInputStream();
@@ -68,10 +73,13 @@ public class ServerTest {
 		}
 
 		public void run() {
+			client = rfb.addClient(serverHandle);
 			byte[] buffer = new byte[32768];
 			try {
 				while (processInitialEvent(buffer))
 					; /* do nothing */
+				rfb.closeClient(client);
+				client = -1;
 				while (passThrough(buffer))
 					; /* do nothing */
 			} catch (Exception e) {
@@ -82,17 +90,17 @@ public class ServerTest {
 		boolean processInitialEvent(byte[] buffer) throws IOException {
 			byte[] message = messageParser.getOne();
 			if (messageParser.isInitialMessage(message[0])) {
-				rfb.processClientMessage(serverHandle,
+				rfb.processClientMessage(client,
 					message, message.length);
 				serverSocket.getOutputStream()
 					.write(message, 0, message.length);
 			}
 			else if (messageParser.isFrameBufferRequest(message[0])) {
-				rfb.processClientMessage(serverHandle,
+				rfb.processClientMessage(client,
 					message, message.length);
 				for (;;) {
 					int len = rfb.getServerResponse(
-						serverHandle, buffer,
+						client, buffer,
 						buffer.length);
 					if (len == 0)
 						break;

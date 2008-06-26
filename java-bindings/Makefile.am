@@ -16,7 +16,7 @@ SWIGOPT=-package rfb -outdir rfb
 
 EXTRA_DIST=autogen.sh $(INTERFACE) $(SRCS) $(ISRCS)
 
-all: $(LIBPREFIX)$(TARGET)$(SO) $(TARGET).jar test.class
+all: $(LIBPREFIX)$(TARGET)$(SO) $(TARGET).jar
 
 # the following is borrowed from SWIG
 
